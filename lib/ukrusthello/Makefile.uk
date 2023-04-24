@@ -1,0 +1,33 @@
+$(eval $(call addlib_s,LIBUKRUSTHELLO,$(CONFIG_LIBUKRUSTHELLO)))
+
+CINCLUDES-$(CONFIG_LIBUKRUSTHELLO) += -I$(CONFIG_LIBUKRUSTHELLO)
+
+RUSTCFLAGS-$(CONFIG_LIBUKRUSTHELLO) += -L $(LIBUKRUSTHELLO_BUILD)/ --extern alloc \
+		--target $(LIBUKRUSTHELLO_BASE)/target.json \
+		-Zallow-features=allocator_api,bench_black_box,concat_idents,global_asm,try_reserve
+
+ifeq ($(CONFIG_LIBUKRUSTHELLO),y)
+# Do not perform these if CONFIG_RUST is not set, as it is not
+# guaranteed that rustc will be available in the system.
+RUSTC_SYSROOT := $(shell $(RUSTC)  --print sysroot)
+RUST_LIB_SRC ?= $(RUSTC_SYSROOT)/lib/rustlib/src/rust/library
+endif
+
+# Common flags
+LIBUKRUSTHELLO_COMMON_FLAGS = --target=$(LIBUKRUSTHELLO_BASE)/target.json --emit=dep-info,obj,metadata --edition=2021 \
+	-Cpanic=abort -Cembed-bitcode=n -Clto=n -Crpath=n \
+	-Cforce-unwind-tables=n -Ccodegen-units=1 \
+	-Zbinary_dep_depinfo=y -Csymbol-mangling-version=v0 \
+	-Dunsafe_op_in_unsafe_fn -Drust_2018_idioms \
+	--crate-type staticlib
+
+# Build the ukrusthello crate, contains the bindings and other useful functions
+$(LIBUKRUSTHELLO_BUILD)/ukrusthello.o: $(LIBUKRUSTHELLO_BASE)/src/lib.rs $(LIBUKRUST_BUILD)/ukrust_sys.o
+	$(call build_cmd, RUSTC, LIBUKRUSTHELLO, $(notdir $@), \
+	$(RUSTC) $(LIBUKRUSTHELLO_COMMON_FLAGS) --extern alloc  \
+		--out-dir $(LIBUKRUSTHELLO_BUILD) -L $(LIBUKRUSTHELLO_BUILD) -A dead_code \
+		-A unused_doc_comments --crate-name ukrusthello $(LIBUKRUSTHELLO_BASE)/src/lib.rs)
+
+
+LIBUKRUSTHELLO_OBJS-y += $(LIBUKRUSTHELLO_BUILD)/ukrusthello.o
+
