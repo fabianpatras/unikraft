@@ -1,0 +1,8 @@
+menuconfig LIBUKRUSTHELLO
+	depends on ARCH_X86_64
+	depends on LIBUKRUST
+	bool "ukrusthello: uk library that wants to consume ukrust :P"
+	default n
+	select LIBUKDEBUG
+	help
+		Hello there. Please fix me. I'm broken.

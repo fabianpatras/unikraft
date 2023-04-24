@@ -1,0 +1,18 @@
+# this file is useless for what I'm trying to do
+[package]
+license-file = "../../COPYING.md"
+name = "ukrusthello"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ukrust = { path = "../../unikraft/lib/ukrust/" }
+
+[lib]
+crate-type = ["staticlib"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
